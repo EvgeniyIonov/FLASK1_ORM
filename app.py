@@ -1,5 +1,6 @@
 from typing import Any
-from flask import Flask, jsonify
+from flask import Flask, jsonify,request
+from random import choice
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -56,7 +57,31 @@ def get_quote(quote_id):
         if quote["id"] == quote_id:
             return jsonify(quote), 200
     return jsonify(error=f"Quote with id={quote_id} not found"), 404
+
+@app.get("/quotes/count")
+def quotes_count():
+    return jsonify(count=len(quotes))
     
+@app.route("/quotes/random", methods=["GET"])
+def random_quote():
+    return jsonify(choice(quotes))
+
+@app.route("/quotes", methods=['POST'])
+def create_quote():
+    new_quote = request.json
+    last_quote = quotes[-1]
+    new_id = last_quote["id"] + 1
+    new_quote["id"] = new_id
+    quotes.append(new_quote)
+    return jsonify(new_quote), 201
+
+@app.route("/quotes/<int:quote_id>", methods=['DELETE'])
+def delete_quote(quote_id: int):
+    for quote in quotes:
+        if quote["id"] == quote_id:
+            quotes.remove(quote)
+            return jsonify({"message": f"Quote with id={quote_id} has deleted"}), 200
+    return jsonify(error=f"Quote with id={quote_id} not found"), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
