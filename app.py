@@ -52,10 +52,6 @@ def get_quotes():
         quotes.append(quote)
 
     return jsonify(quotes), 200
-
-@app.route("/params/<value>")
-def param_example(value: str):
-    return jsonify(param=value), 200
     
 @app.route("/quotes/<int:quote_id>")
 def get_quote(quote_id):
@@ -68,10 +64,6 @@ def get_quote(quote_id):
 def quotes_count():
     return jsonify(count=len(quotes))
     
-@app.route("/quotes/random", methods=["GET"])
-def random_quote():
-    return jsonify(choice(quotes))
-
 @app.route("/quotes", methods=['POST'])
 def create_quote():
     new_quote = request.json
