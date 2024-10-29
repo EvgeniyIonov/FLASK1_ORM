@@ -1,3 +1,4 @@
+from typing import Any
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -44,6 +45,18 @@ def about():
 @app.route("/quotes")
 def get_quotes():
     return jsonify(quotes), 200
+
+@app.route("/params/<value>")
+def param_example(value: str):
+    return jsonify(param=value), 200
+    
+@app.route("/quotes/<int:quote_id>")
+def get_quote(quote_id):
+    for quote in quotes:
+        if quote["id"] == quote_id:
+            return jsonify(quote), 200
+    return jsonify(error=f"Quote with id={quote_id} not found"), 404
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
