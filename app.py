@@ -1,61 +1,57 @@
+from http.client import HTTPException
 from typing import Any
-from flask import Flask, jsonify,request
+from flask import Flask, jsonify, request, g, abort
 from random import choice
 from pathlib import Path
 import sqlite3
 
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String
+
+class Base(DeclarativeBase):
+    pass
+
 BASE_DIR = Path(__file__).parent
-path_to_db = BASE_DIR / "store.db"
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{BASE_DIR / 'main.db'}"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# quotes = [
-#    {
-#        "id": 3,
-#        "author": "Rick Cook",
-#        "text": "Программирование сегодня — это гонка разработчиков программ, стремящихся писать программы с большей и лучшей идиотоустойчивостью, и вселенной, которая пытается создать больше отборных идиотов. Пока вселенная побеждает."
-#    },
-#    {
-#        "id": 5,
-#        "author": "Waldi Ravens",
-#        "text": "Программирование на С похоже на быстрые танцы на только что отполированном полу людей с острыми бритвами в руках."
-#    },
-#    {
-#        "id": 6,
-#        "author": "Mosher’s Law of Software Engineering",
-#        "text": "Не волнуйтесь, если что-то не работает. Если бы всё работало, вас бы уволили."
-#    },
-#    {
-#        "id": 8,
-#        "author": "Yoggi Berra",
-#        "text": "В теории, теория и практика неразделимы. На практике это не так."
-#    },
+db = SQLAlchemy(model_class=Base)
+db.init_app(app)
 
-# ]
+class QuoteModel(db.Model):
+    __tablename__ = 'quotes'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    author: Mapped[str] = mapped_column(String(32))
+    text: Mapped[str] = mapped_column(String(255))
+    
+    def __init__(self, author, text):
+        self.author = author
+        self.text = text
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "author": self.author,
+            "text": self.text
+        }
+
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    return jsonify(error=e.description), e.code
 
 @app.route("/quotes")
 def get_quotes():
-    sql = "SELECT * from quotes;"
-    connection = sqlite3.connect(path_to_db)
-    try:
-        cursor = connection.cursor()
-        cursor.execute(sql)
-        quotes_db = cursor.fetchall()
-    except:
-        return jsonify(error="Some database error"), 500
-    finally:
-        cursor.close()
-        connection.close()
-
-    keys = ("id", "author", "text")
-    
+    quotes_db = db.session.scalars(db.select(QuoteModel)).all()
     quotes = []
-
-    for quote_db in quotes_db:
-        quote = dict(zip(keys, quote_db))
-        quotes.append(quote)
-
+    for quote in quotes_db:
+        quotes.append(quote.to_dict())
     return jsonify(quotes), 200
     
 @app.route("/quotes/<int:quote_id>")
