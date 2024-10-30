@@ -135,8 +135,6 @@ def update_quote(quote_id):
 def delete_quote(quote_id: int):
     id = quote_id
 
-    print(id)
-
     if (id == None):
         return jsonify(error="Input param error"), 400
     
