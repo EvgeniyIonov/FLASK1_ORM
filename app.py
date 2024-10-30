@@ -89,7 +89,7 @@ def create_quote():
     author = args.get("author")
     text = args.get("text")
 
-    if (author == None) or (text == None):
+    if (author is None) or (text is None):
         return jsonify(error="Input param error"), 400
     
     sql = "insert into quotes (author, text) values(?, ?);"
@@ -114,7 +114,7 @@ def update_quote(quote_id):
     author = args.get("author")
     text = args.get("text")
 
-    if (author == None) or (text == None) or (id == None):
+    if (author is None) or (text is None) or (id is None):
         return jsonify(error="Input param error"), 400
     
     sql = "update quotes set author = ?, text = ? where id = ?;"
@@ -135,7 +135,7 @@ def update_quote(quote_id):
 def delete_quote(quote_id: int):
     id = quote_id
 
-    if (id == None):
+    if (id is None):
         return jsonify(error="Input param error"), 400
     
     sql = "delete from quotes where id = ?;"
