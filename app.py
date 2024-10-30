@@ -37,7 +37,7 @@ app.config['JSON_AS_ASCII'] = False
 @app.route("/quotes")
 def get_quotes():
     sql = "SELECT * from quotes;"
-    connection = sqlite3.connect("store.db")
+    connection = sqlite3.connect(path_to_db)
     try:
         cursor = connection.cursor()
         cursor.execute(sql)
@@ -61,7 +61,7 @@ def get_quotes():
 @app.route("/quotes/<int:quote_id>")
 def get_quote(quote_id):
     sql = "SELECT * from quotes where id = ?;"
-    connection = sqlite3.connect("store.db")
+    connection = sqlite3.connect(path_to_db)
     try:
         cursor = connection.cursor()
         cursor.execute(sql, (quote_id, ))
@@ -93,7 +93,7 @@ def create_quote():
         return jsonify(error="Input param error"), 400
     
     sql = "insert into quotes (author, text) values(?, ?);"
-    connection = sqlite3.connect("store.db")
+    connection = sqlite3.connect(path_to_db)
     try:
         cursor = connection.cursor()
         cursor.execute(sql, (author, text))
@@ -118,7 +118,7 @@ def update_quote(quote_id):
         return jsonify(error="Input param error"), 400
     
     sql = "update quotes set author = ?, text = ? where id = ?;"
-    connection = sqlite3.connect("store.db")
+    connection = sqlite3.connect(path_to_db)
     try:
         cursor = connection.cursor()
         cursor.execute(sql, (author, text, id))
@@ -139,7 +139,7 @@ def delete_quote(quote_id: int):
         return jsonify(error="Input param error"), 400
     
     sql = "delete from quotes where id = ?;"
-    connection = sqlite3.connect("store.db")
+    connection = sqlite3.connect(path_to_db)
     try:
         cursor = connection.cursor()
         cursor.execute(sql, (id, ))
