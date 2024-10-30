@@ -150,7 +150,7 @@ def delete_quote(quote_id: int):
         cursor.close()
         connection.close()
 
-    return jsonify([]), 200
+    return jsonify(message="deleted"), 200
 
 
 if __name__ == "__main__":
